@@ -1,8 +1,10 @@
-import './App.css';
-import { useState } from 'react';
+import "./App.css";
+import { useState } from "react";
+import SudokuGrid from "./SudokuGrid";
+import SolvedGrid from "./SolvedSudokuGrid";
+import MessageBlock from "./MessageBlock";
 
 function App() {
-
   const myArr = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -12,99 +14,103 @@ function App() {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0]
-  ]
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ];
 
   const [sudokuArr, setSudokuArr] = useState(myArr);
-
-  
+  const [isSolved, setIsSolved] = useState(false);
+  const [message, setMessage] = useState("");
+  const [Loading, setLoading] = useState(false);
 
   function onInputChange(e, row, col) {
     setSudokuArr(() => {
-      const updatedArr = sudokuArr
+      const updatedArr = sudokuArr;
       for (let i = 0; i < updatedArr.length; i++) {
         for (let j = 0; j < updatedArr[i].length; j++) {
-          if (i == row && j == col) {
-            updatedArr[i][j] = parseInt(e.target.value)
+          if (i === row && j === col) {
+            updatedArr[i][j] = parseInt(e.target.value);
           }
         }
       }
-      return updatedArr
-    })
+      return updatedArr;
+    });
   }
 
   function solveClick() {
-    fetch('https://sudoku-solver-jesushzv.herokuapp.com', {
-      method: 'POST',
+    setLoading(true);
+    fetch("https://sudoku-solver-jesushzv.herokuapp.com", {
+      method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ board: sudokuArr })
-    }).then((response) => {
-      return response.json()
-    }
-    ).then((response) => {
-      setSudokuArr(() => {
-        let solved = response["answer"]
-        let updatedArr = sudokuArr
-        for(let i = 0; i < updatedArr.length; i ++){
-          for(let j = 0; j < updatedArr[i].length; j++){
-            updatedArr[i][j] = solved[i][j]
-          }
-        }
-        return updatedArr
-      })
+      body: JSON.stringify({ board: sudokuArr }),
     })
-  };
-
-function reset() {
-  window.location.reload();
-}
-
-
-  return (
-    <div className="App">
-      <div className='App-header'>
-        <h2>Sudoku Solver</h2>
-        <table>
-          <tbody>
-            {
-              sudokuArr.map((row, index) => {
-                return (
-                  <tr key={index} className={(row + 1) % 3 === 0 ? 'bottomBorder' : ''}>
-                    {
-                    row.map((col, indexC) => {
-                      return ( <td key={index + indexC} className={(col + 1) % 3 === 0 ? 'sideBorder' : ''}>
-                      <input onChange={(e) => onInputChange(e, row, col)} className='cell-block' disabled={myArr[row][col] !== 0} ></input>
-                    </td>
-                      )
-                    })}
-                  </tr>
-                )
-              }) || <div>Loading...</div>
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        console.log(response);
+        setSudokuArr(() => {
+          let solved = response["answer"];
+          let updatedArr = sudokuArr;
+          for (let i = 0; i < updatedArr.length; i++) {
+            for (let j = 0; j < updatedArr[i].length; j++) {
+              updatedArr[i][j] = solved[i][j];
             }
-          </tbody>
-        </table>
-        <div className='buttons'>
-          <button className='solveBtn' onClick={() => solveClick()}>Solve</button>
-          <button className='resetBtn' onClick={() => reset()}>Reset</button>
+          }
+          return updatedArr;
+        });
+        setMessage(response["message"]);
+      })
+      .then(() => {
+        setIsSolved(true);
+      })
+      .then(() => {
+        setLoading(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+        setMessage(error.message);
+      });
+  }
+  function reset() {
+    window.location.reload();
+  }
+
+  if (sudokuArr.length === 0) {
+    return <div>Loading...</div>;
+  } else {
+    return (
+      <div className="App">
+        <div className="App-header">
+          <h2>Sudoku Solver</h2>
+          <table>
+            <tbody>
+              {sudokuArr && !isSolved && !Loading && (
+                <SudokuGrid
+                  sudokuArr={sudokuArr}
+                  onInputChange={onInputChange}
+                />
+              )}
+              {Loading && <div>Loading...</div>}
+              {isSolved && <SolvedGrid sudokuArr={sudokuArr} />}
+            </tbody>
+          </table>
+
+          {isSolved && <MessageBlock message={message} />}
+          <div className="buttons">
+            <button className="solveBtn" onClick={() => solveClick()}>
+              Solve
+            </button>
+            <button className="resetBtn" onClick={() => reset()}>
+              Reset
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default App;
-
-{/*{
-              [0, 1, 2, 3, 4, 5, 6, 7, 8].map((row, rIndex) => {
-                return <tr key={rIndex} className={(row + 1) % 3 === 0 ? 'bottomBorder' : ''}>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((col, cIndex) => {
-                    return <td key={rIndex + cIndex} className={(col + 1) % 3 === 0 ? 'sideBorder' : ''}>
-                      <input onChange={(e) => onInputChange(e, row, col)} className='cell-block' disabled={myArr[row][col] !== 0} />
-                    </td>
-                  })}
-                </tr>
-              })
-            } */}
