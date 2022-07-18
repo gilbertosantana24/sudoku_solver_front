@@ -1,4 +1,6 @@
 import React from "react";
+import "./App.css";
+
 
 const SudokuGrid = ({ sudokuArr, onInputChange }) => {
     if (!sudokuArr) {

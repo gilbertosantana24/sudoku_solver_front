@@ -85,7 +85,7 @@ function App() {
       <div className="App">
         <div className="App-header">
           <h2>Sudoku Solver</h2>
-          <table>
+          <table className="grid">
             <tbody>
               {sudokuArr && !isSolved && !Loading && (
                 <SudokuGrid

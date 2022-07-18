@@ -65,3 +65,14 @@ td{
 .sideBorder{
   border-right: 2px solid black;
 }
+
+@media all and (max-width: 500px){
+  .grid{
+    max-width: 20px;
+    max-height: 750px;
+  }
+  .cell-block{
+    max-width: 35px;
+    max-height: 35px;
+  }
+}
